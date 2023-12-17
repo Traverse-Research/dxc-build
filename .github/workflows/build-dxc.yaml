@@ -5,6 +5,8 @@ jobs:
     runs-on: macos-13
     steps:
       - run: brew install ninja
+      - name: Checkout
+        - uses: actions/checkout@v4
       - run: echo $(ls -al)
       - run: echo $(readlink -f .)
       - run: git clone https://github.com/microsoft/DirectXShaderCompiler.git dxc && cd dxc && git checkout $(cat ../commit-hash) && git submodule update --init
