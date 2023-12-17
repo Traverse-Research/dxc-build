@@ -4,10 +4,7 @@ jobs:
   build-dxc:
     runs-on: macos-latest
     steps:
-      - run: git init dxc && cd dxc
-      - run: git remote add https://github.com/microsoft/DirectXShaderCompiler.git
-      - run: git fetch origin $(cat ../commit-hash)
-      - run: git reset --hard FETCH_HEAD
+      - run: git init dxc && cd dxc && git remote add https://github.com/microsoft/DirectXShaderCompiler.git && git fetch origin $(cat ../commit-hash) && git reset --hard FETCH_HEAD
       - run: mkdir build && cd build
       - run: cmake .. -GNinja -C ../cmake/caches/PredefinedParams.cmake -DSPIRV_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_WERROR=On
       - run: ninja
