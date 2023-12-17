@@ -5,8 +5,8 @@ jobs:
     runs-on: macos-latest
     steps:
       - run: git init dxc && cd dxc && git remote add origin https://github.com/microsoft/DirectXShaderCompiler.git && git fetch origin $(cat ../commit-hash) && git reset --hard FETCH_HEAD
-      - run: mkdir dxc/build && cd dxc/build && cmake .. -GNinja -C ../cmake/caches/PredefinedParams.cmake -DSPIRV_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_WERROR=On
-      - run: cd dxc/build && ninja
+      - run: mkdir dxc/build && cd dxc/build && cmake .. -C ../cmake/caches/PredefinedParams.cmake -DSPIRV_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_WERROR=On
+      - run: cd dxc/build && make -j
       - uses: actions/upload-artifact@v4
         with:
           name: MacOS libdxcompiler.dylib
