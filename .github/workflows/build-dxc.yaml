@@ -4,7 +4,8 @@ jobs:
   build-dxc:
     runs-on: macos-13
     steps:
-      - run: brew install ninja cmake
+      - run: brew install ninja
+      - run: echo $(cat ./commit-hash)
       - run: git clone https://github.com/microsoft/DirectXShaderCompiler.git dxc && cd dxc && git checkout $(cat ../commit-hash) && git submodule update --init
       - run: mkdir dxc/build && cd dxc/build && cmake .. -GNinja -C ../cmake/caches/PredefinedParams.cmake -DSPIRV_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_WERROR=On
       - run: cd dxc/build && ninja
