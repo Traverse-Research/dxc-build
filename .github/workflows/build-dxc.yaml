@@ -1,5 +1,14 @@
 name: Build DXC for MacOS
-on: [push]
+on:
+  workflow_dispatch:
+    inputs:
+      dxc_sha:
+        description: DXC commit hash
+        required: true
+        type: string
+      blah:
+        description: env
+        type: environment
 
 env:
   commit_hash: 74a3206
@@ -13,10 +22,10 @@ jobs:
         # https://github.com/actions/checkout
         with:
           repository: microsoft/DirectXShaderCompiler
-          ref: ${{ env.commit_hash }}
+          ref: ${{ input.dxc_sha }}
       - run: cmake -B./build -GNinja -C cmake/caches/PredefinedParams.cmake -DSPIRV_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_WERROR=On
       - run: cmake --build ./build
       - uses: actions/upload-artifact@v4
         with:
-          name: MacOS libdxcompiler.dylib ${{ env.commit_hash }}
+          name: MacOS libdxcompiler.dylib ${{ input.dxc_sha }}
           path: build/lib/libdxcompiler.dylib
