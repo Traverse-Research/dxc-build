@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v4
         # https://github.com/actions/checkout
         with:
-          repository: https://github.com/microsoft/DirectXShaderCompiler
+          repository: microsoft/DirectXShaderCompiler
           ref: ${{ env.commit_hash }}
       - run: cmake -B./build -GNinja -C cmake/caches/PredefinedParams.cmake -DSPIRV_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_WERROR=On
       - run: cmake --build ./build
