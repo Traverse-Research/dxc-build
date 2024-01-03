@@ -1,5 +1,9 @@
 name: Build DXC for MacOS
 on: [push]
+
+env:
+  commit_hash: 74a3206
+
 jobs:
   build-dxc:
     runs-on: macos-13
@@ -7,16 +11,12 @@ jobs:
       - run: brew install ninja
       - uses: actions/checkout@v4
         # https://github.com/actions/checkout
-        # with:
-        #   repository: DXC
-      - run: git clone https://github.com/microsoft/DirectXShaderCompiler.git dxc
-      - run: git checkout $(cat ../commit-hash) && git submodule update --init
-        working-directory: dxc
+        with:
+          repository: https://github.com/microsoft/DirectXShaderCompiler
+          ref: ${{ env.commit_hash }}
       - run: cmake -B./build -GNinja -C cmake/caches/PredefinedParams.cmake -DSPIRV_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_WERROR=On
-        working-directory: dxc
       - run: cmake --build ./build
-        working-directory: dxc
       - uses: actions/upload-artifact@v4
         with:
-          name: MacOS libdxcompiler.dylib
-          path: dxc/build/lib/libdxcompiler.dylib
+          name: MacOS libdxcompiler.dylib ${{ env.commit_hash }}
+          path: build/lib/libdxcompiler.dylib
