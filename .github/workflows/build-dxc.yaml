@@ -17,7 +17,7 @@ jobs:
   build-dxc-linux:
     runs-on: ubuntu-latest
     steps:
-      - run: apt-get install -y ninja-build
+      - run: sudo apt-get install -y ninja-build
       - uses: actions/checkout@v4
       - run: git clone https://github.com/microsoft/DirectXShaderCompiler.git dxc
       - run: cd dxc && git checkout $(cat ../commit-hash) && git submodule update --init
@@ -25,5 +25,5 @@ jobs:
       - run: cd dxc/build && ninja
       - uses: actions/upload-artifact@v4
         with:
-          name: MacOS libdxcompiler.dylib
-          path: dxc/build/lib/libdxcompiler.dylib
+          name: MacOS libdxcompiler.so
+          path: dxc/build/lib/libdxcompiler.so
