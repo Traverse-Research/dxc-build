@@ -15,7 +15,7 @@ jobs:
           name: MacOS libdxcompiler.dylib
           path: dxc/build/lib/libdxcompiler.dylib
   build-dxc-linux:
-    runs-on: ubuntu-latest-16core
+    runs-on: ubuntu-20.04-16core
     steps:
       - run: sudo apt-get install -y ninja-build
       - uses: actions/checkout@v4
@@ -28,7 +28,7 @@ jobs:
           name: Linux libdxcompiler.so
           path: dxc/build/lib/libdxcompiler.so
   build-dxc-windows:
-    runs-on: windows-latest-16core
+    runs-on: windows-2022-16core
     steps:
       - uses: actions/checkout@v4
       - run: git clone https://github.com/microsoft/DirectXShaderCompiler.git dxc
