@@ -2,7 +2,7 @@ name: Build DXC for MacOS
 on: [push]
 jobs:
   build-dxc-macos:
-    runs-on: macos-13
+    runs-on: macos-13-xlarge
     steps:
       - run: brew install ninja
       - uses: actions/checkout@v4
@@ -15,7 +15,7 @@ jobs:
           name: MacOS libdxcompiler.dylib
           path: dxc/build/lib/libdxcompiler.dylib
   build-dxc-linux:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-xlarge
     steps:
       - run: sudo apt-get install -y ninja-build
       - uses: actions/checkout@v4
@@ -28,12 +28,12 @@ jobs:
           name: MacOS libdxcompiler.so
           path: dxc/build/lib/libdxcompiler.so
   build-dxc-windows:
-    runs-on: windows-latest
+    runs-on: windows-latest-xlarge
     steps:
       - uses: actions/checkout@v4
       - run: git clone https://github.com/microsoft/DirectXShaderCompiler.git dxc
       - run: cd dxc && git checkout $(cat ../commit-hash) && git submodule update --init
-      - run: mkdir dxc/build && cd dxc/build && cmake .. -G "Visual Studio 17 2022" -C ../cmake/caches/PredefinedParams.cmake -DSPIRV_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_WERROR=Off
+      - run: mkdir dxc/build && cd dxc/build && cmake .. -G "Visual Studio 17 2022" -C gt../cmake/caches/PredefinedParams.cmake -DSPIRV_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_WERROR=Off
       - run: cd dxc/build && cmake --build .
       - uses: actions/upload-artifact@v4
         with:
