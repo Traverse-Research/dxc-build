@@ -1,42 +1,54 @@
-name: Build DXC for MacOS
+name: Build DXC
 on: [push]
 jobs:
   build-dxc-macos:
     runs-on: macos-13-xlarge
     steps:
-      - run: brew install ninja
       - uses: actions/checkout@v4
-      - run: git clone https://github.com/microsoft/DirectXShaderCompiler.git dxc
-      - run: cd dxc && git checkout $(cat ../commit-hash) && git submodule update --init
-      - run: mkdir dxc/build && cd dxc/build && cmake .. -GNinja -C ../cmake/caches/PredefinedParams.cmake -DSPIRV_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_WERROR=Off
-      - run: cd dxc/build && ninja
+      - run: git clone https://github.com/microsoft/DirectXShaderCompiler.git dxc --revision=$(cat commit-hash) --recurse-submodules
+      - run: cmake -Bbuild -GNinja -C cmake/caches/PredefinedParams.cmake -DSPIRV_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_WERROR=OFF
+        working-directory: dxc
+      - run: cmake --build dxc/build -t dxcompiler
       - uses: actions/upload-artifact@v4
         with:
-          name: MacOS libdxcompiler.dylib
+          name: MacOS aarch64 libdxcompiler.dylib
           path: dxc/build/lib/libdxcompiler.dylib
   build-dxc-linux:
-    runs-on: linux-hosted-runner
+    # runs-on: linux-hosted-runner
+    runs-on: ubuntu-22.04 # For older GLIBC, the "hosted runner" above has Ubuntu 24.04 whose compiled binaries require glibc 2.38.
     steps:
       - run: sudo apt-get install -y ninja-build
       - uses: actions/checkout@v4
-      - run: git clone https://github.com/microsoft/DirectXShaderCompiler.git dxc
-      - run: cd dxc && git checkout $(cat ../commit-hash) && git submodule update --init
-      - run: mkdir dxc/build && cd dxc/build && cmake .. -GNinja -C ../cmake/caches/PredefinedParams.cmake -DSPIRV_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_WERROR=Off
-      - run: cd dxc/build && ninja
+      - run: git clone https://github.com/microsoft/DirectXShaderCompiler.git dxc --revision=$(cat commit-hash) --recurse-submodules
+      - run: cmake -Bbuild -GNinja -C cmake/caches/PredefinedParams.cmake -DSPIRV_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_WERROR=OFF
+        working-directory: dxc
+      - run: cmake --build dxc/build -t dxcompiler
       - uses: actions/upload-artifact@v4
         with:
-          name: Linux libdxcompiler.so
+          name: Linux x64 libdxcompiler.so
           path: dxc/build/lib/libdxcompiler.so
   build-dxc-windows:
     runs-on: windows-large-runner
     steps:
       - uses: actions/checkout@v4
-      - run: git clone https://github.com/microsoft/DirectXShaderCompiler.git dxc
-      - run: cd dxc && git checkout $(cat ../commit-hash) && git submodule update --init
-      - run: mkdir dxc/build && cd dxc/build && cmake .. -G "Visual Studio 17 2022" -C ../cmake/caches/PredefinedParams.cmake -DSPIRV_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_WERROR=Off
-      - run: cd dxc/build && cmake --build .
-      - if: always()
-        uses: actions/upload-artifact@v4
+      - run: git clone https://github.com/microsoft/DirectXShaderCompiler.git dxc --revision=$(cat commit-hash) --recurse-submodules
+      - run: cmake -Bbuild -G "Visual Studio 17 2022" -C cmake/caches/PredefinedParams.cmake -DSPIRV_BUILD_TESTS=OFF -DLLVM_ENABLE_WERROR=OFF
+        working-directory: dxc
+      - run: cmake --build dxc/build --config Release -t dxcompiler
+      - uses: actions/upload-artifact@v4
         with:
-          name: Windows dxcompiler.dll
-          path: dxc/build/Debug/bin/dxcompiler.dll
+          name: Windows x64 dxcompiler.dll
+          path: dxc/build/Release/bin/dxcompiler.dll
+
+      # Cross-compile to ARM64 with workaround from https://github.com/microsoft/DirectXShaderCompiler/issues/7000#issuecomment-2460490566 (also in hctbuild.cmd)
+      - run: >
+          cmake -Bbuild-aarch64 -G "Visual Studio 17 2022" -C cmake/caches/PredefinedParams.cmake -DSPIRV_BUILD_TESTS=OFF -DLLVM_ENABLE_WERROR=OFF
+          -A ARM64
+          -DLLVM_TABLEGEN="$(Resolve-Path build\Release\bin\llvm-tblgen.exe)"
+          -DCLANG_TABLEGEN="$(Resolve-Path build\Release\bin\clang-tblgen.exe)"
+        working-directory: dxc
+      - run: cmake --build dxc/build-aarch64 --config Release -t dxcompiler
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Windows aarch64 dxcompiler.dll
+          path: dxc/build-aarch64/Release/bin/dxcompiler.dll
