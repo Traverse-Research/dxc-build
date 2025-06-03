@@ -39,7 +39,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: Windows x64 dxcompiler.dll
-          path: dxc/build/Release/bin/dxcompiler.dll
+          path: dxc/build/Release/bin/dxcompiler.*
 
       # Cross-compile to ARM64 with workaround from https://github.com/microsoft/DirectXShaderCompiler/issues/7000#issuecomment-2460490566 (also in hctbuild.cmd)
       - run: >
@@ -55,4 +55,4 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: Windows aarch64 dxcompiler.dll
-          path: dxc/build-aarch64/Release/bin/dxcompiler.dll
+          path: dxc/build-aarch64/Release/bin/dxcompiler.*
