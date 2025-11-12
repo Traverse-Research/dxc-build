@@ -29,7 +29,7 @@ jobs:
           path: dxc/build/lib/libdxcompiler.so
   build-dxc-windows:
     # runs-on: windows-large-runner
-    runs-on: windows-2019 # For our older GPU test runners, perhaps?
+    runs-on: windows-latest # For our older GPU test runners, perhaps?
     steps:
       - uses: actions/checkout@v4
       - run: git clone https://github.com/microsoft/DirectXShaderCompiler.git dxc --revision=$(cat commit-hash) --recurse-submodules
