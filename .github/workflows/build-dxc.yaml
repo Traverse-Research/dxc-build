@@ -33,6 +33,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: git clone https://github.com/microsoft/DirectXShaderCompiler.git dxc --revision=$(cat commit-hash) --recurse-submodules
+      - uses: microsoft/setup-msbuild@v2
+        with:
+          vs-version: '[16.4,16.5)'
       - run: cmake -Bbuild -G "Visual Studio 16 2019" -C cmake/caches/PredefinedParams.cmake -DSPIRV_BUILD_TESTS=OFF -DLLVM_ENABLE_WERROR=OFF
         working-directory: dxc
       - run: cmake --build dxc/build --config Release -t dxcompiler
