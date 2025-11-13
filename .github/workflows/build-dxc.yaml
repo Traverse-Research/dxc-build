@@ -2,7 +2,7 @@ name: Build DXC
 on: [push]
 jobs:
   build-dxc-macos:
-    runs-on: macos-13-xlarge
+    runs-on: macos-15-xlarge
     steps:
       - uses: actions/checkout@v4
       - run: git clone https://github.com/microsoft/DirectXShaderCompiler.git dxc --revision=$(cat commit-hash) --recurse-submodules
@@ -29,11 +29,11 @@ jobs:
           path: dxc/build/lib/libdxcompiler.so
   build-dxc-windows:
     # runs-on: windows-large-runner
-    runs-on: windows-2019 # For our older GPU test runners, perhaps?
+    runs-on: windows-2022 # For our older GPU test runners, perhaps?
     steps:
       - uses: actions/checkout@v4
       - run: git clone https://github.com/microsoft/DirectXShaderCompiler.git dxc --revision=$(cat commit-hash) --recurse-submodules
-      - run: cmake -Bbuild -G "Visual Studio 16 2019" -C cmake/caches/PredefinedParams.cmake -DSPIRV_BUILD_TESTS=OFF -DLLVM_ENABLE_WERROR=OFF
+      - run: cmake -Bbuild -G "Visual Studio 17 2022" -C cmake/caches/PredefinedParams.cmake -DSPIRV_BUILD_TESTS=OFF -DLLVM_ENABLE_WERROR=OFF
         working-directory: dxc
       - run: cmake --build dxc/build --config Release -t dxcompiler
       - uses: actions/upload-artifact@v4
@@ -43,7 +43,7 @@ jobs:
 
       # Cross-compile to ARM64 with workaround from https://github.com/microsoft/DirectXShaderCompiler/issues/7000#issuecomment-2460490566 (also in hctbuild.cmd)
       - run: >
-          cmake -Bbuild-aarch64 -G "Visual Studio 16 2019" -C cmake/caches/PredefinedParams.cmake -DSPIRV_BUILD_TESTS=OFF -DLLVM_ENABLE_WERROR=OFF
+          cmake -Bbuild-aarch64 -G "Visual Studio 17 2022" -C cmake/caches/PredefinedParams.cmake -DSPIRV_BUILD_TESTS=OFF -DLLVM_ENABLE_WERROR=OFF
           -DHLSL_INCLUDE_TESTS=OFF
           -DLLVM_INCLUDE_TESTS=OFF
           -DCLANG_INCLUDE_TESTS=OFF
