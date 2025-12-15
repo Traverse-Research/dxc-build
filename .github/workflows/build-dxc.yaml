@@ -4,28 +4,29 @@ jobs:
   build-dxc-macos:
     runs-on: macos-15-xlarge
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - run: git clone https://github.com/microsoft/DirectXShaderCompiler.git dxc --revision=$(cat commit-hash) --recurse-submodules
       - run: cmake -Bbuild -GNinja -C cmake/caches/PredefinedParams.cmake -DSPIRV_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_WERROR=OFF
         working-directory: dxc
       - run: cmake --build dxc/build -t dxcompiler
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
-          name: MacOS aarch64 libdxcompiler.dylib
+          # name: aarch64-apple-darwin
+          name: universal-apple-darwin
           path: dxc/build/lib/libdxcompiler.dylib
   build-dxc-linux:
     # runs-on: linux-hosted-runner
     runs-on: ubuntu-22.04 # For older GLIBC, the "hosted runner" above has Ubuntu 24.04 whose compiled binaries require glibc 2.38.
     steps:
       - run: sudo apt-get install -y ninja-build
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - run: git clone https://github.com/microsoft/DirectXShaderCompiler.git dxc --revision=$(cat commit-hash) --recurse-submodules
       - run: cmake -Bbuild -GNinja -C cmake/caches/PredefinedParams.cmake -DSPIRV_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_WERROR=OFF
         working-directory: dxc
       - run: cmake --build dxc/build -t dxcompiler
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
-          name: Linux x64 libdxcompiler.so
+          name: x86_64-unknown-linux-gnu
           path: dxc/build/lib/libdxcompiler.so
   build-dxc-windows:
     # runs-on: windows-large-runner
@@ -34,14 +35,14 @@ jobs:
     # 19045.6691 is the latest/last Windows 10 release, which we need to target in order
     # to load dxcompiler.dll on our older GPU-runner CI machines.
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - run: git clone https://github.com/microsoft/DirectXShaderCompiler.git dxc --revision=$(cat commit-hash) --recurse-submodules
       - run: cmake -Bbuild -G "Visual Studio 17 2022" -C cmake/caches/PredefinedParams.cmake -DSPIRV_BUILD_TESTS=OFF -DLLVM_ENABLE_WERROR=OFF -DCMAKE_SYSTEM_VERSION="10.0.19045.6691"
         working-directory: dxc
       - run: cmake --build dxc/build --config Release -t dxcompiler
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
-          name: Windows x64 dxcompiler.dll
+          name: x86_64-pc-windows-msvc
           path: dxc/build/Release/bin/dxcompiler.*
 
       # Cross-compile to ARM64 with workaround from https://github.com/microsoft/DirectXShaderCompiler/issues/7000#issuecomment-2460490566 (also in hctbuild.cmd)
@@ -55,7 +56,21 @@ jobs:
           -DCLANG_TABLEGEN="$(Resolve-Path build\Release\bin\clang-tblgen.exe)"
         working-directory: dxc
       - run: cmake --build dxc/build-aarch64 --config Release -t dxcompiler
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
-          name: Windows aarch64 dxcompiler.dll
+          name: aarch64-pc-windows-msvc
           path: dxc/build-aarch64/Release/bin/dxcompiler.*
+
+  merge:
+    runs-on: ubuntu-latest
+    needs:
+      - build-dxc-macos
+      - build-dxc-linux
+      - build-dxc-windows
+    steps:
+      - name: Merge Artifacts
+        uses: actions/upload-artifact/merge@v6
+        with:
+          name: dxcompiler
+          pattern: "*"
+          separate-directories: true
