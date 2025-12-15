@@ -30,15 +30,13 @@ jobs:
   build-dxc-windows:
     # runs-on: windows-large-runner
     runs-on: windows-2022
-    # According to https://developer.microsoft.com/en-us/windows/downloads/sdk-archive/
-    # 10.0.19041.0 is the latest SDK that can target Windows 10, which we need
-    # to load these binaries on older CI machines.
-    # This SDK is still available on the latest windows-2022 runner images:
-    # https://github.com/actions/runner-images/blob/main/images/windows/Windows2022-Readme.md#installed-windows-sdks
+    # According to https://learn.microsoft.com/en-us/windows/release-health/release-information
+    # 19045.6691 is the latest/last Windows 10 release, which we need to target in order
+    # to load dxcompiler.dll on our older GPU-runner CI machines.
     steps:
       - uses: actions/checkout@v4
       - run: git clone https://github.com/microsoft/DirectXShaderCompiler.git dxc --revision=$(cat commit-hash) --recurse-submodules
-      - run: cmake -Bbuild -G "Visual Studio 17 2022" -C cmake/caches/PredefinedParams.cmake -DSPIRV_BUILD_TESTS=OFF -DLLVM_ENABLE_WERROR=OFF -DCMAKE_GENERATOR_PLATFORM="version=10.0.19041.0"
+      - run: cmake -Bbuild -G "Visual Studio 17 2022" -C cmake/caches/PredefinedParams.cmake -DSPIRV_BUILD_TESTS=OFF -DLLVM_ENABLE_WERROR=OFF -DCMAKE_SYSTEM_VERSION="10.0.19045.6691"
         working-directory: dxc
       - run: cmake --build dxc/build --config Release -t dxcompiler
       - uses: actions/upload-artifact@v4
@@ -48,7 +46,7 @@ jobs:
 
       # Cross-compile to ARM64 with workaround from https://github.com/microsoft/DirectXShaderCompiler/issues/7000#issuecomment-2460490566 (also in hctbuild.cmd)
       - run: >
-          cmake -Bbuild-aarch64 -G "Visual Studio 17 2022" -C cmake/caches/PredefinedParams.cmake -DSPIRV_BUILD_TESTS=OFF -DLLVM_ENABLE_WERROR=OFF -DCMAKE_GENERATOR_PLATFORM="version=10.0.19041.0"
+          cmake -Bbuild-aarch64 -G "Visual Studio 17 2022" -C cmake/caches/PredefinedParams.cmake -DSPIRV_BUILD_TESTS=OFF -DLLVM_ENABLE_WERROR=OFF -DCMAKE_SYSTEM_VERSION="10.0.19045.6691"
           -DHLSL_INCLUDE_TESTS=OFF
           -DLLVM_INCLUDE_TESTS=OFF
           -DCLANG_INCLUDE_TESTS=OFF
